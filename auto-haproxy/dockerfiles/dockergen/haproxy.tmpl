@@ -1,0 +1,32 @@
+defaults
+    mode http
+    retries 20
+    option redispatch
+    maxconn 5000
+
+frontend http
+    bind *:80
+    default_backend {{ .Env.BACKEND }}
+
+backend {{ .Env.BACKEND }}
+
+    option httpchk GET / HTTP/1.1
+
+    # Backend {{ .Env.BACKEND }}
+    # Backend PORT {{ .Env.BACKEND_PORT }}
+
+    {{ range $label, $containers := groupByLabel $ "com.docker.compose.service" }}
+    {{ if eq $label $.Env.BACKEND }}
+
+    {{ range $index, $value := $containers }}
+    {{ with $project := index $value.Labels "com.docker.compose.project" }}
+    {{ if eq $project $.Env.PROJECT  }}
+    {{ $network := index $value.Networks 0 }}
+    server {{$value.Name}} {{ $network.IP }}:{{ $.Env.BACKEND_PORT }} check
+    {{ end }}
+    {{ end }}
+    {{ end }}
+
+    {{ end }}
+
+    {{ end }}

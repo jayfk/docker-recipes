@@ -1,0 +1,16 @@
+version: '2'
+
+volumes:
+  postgres_data: {}
+  postgres_backups: {}
+
+services:
+
+  postgres:
+    build: ./dockerfiles/postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backups:/backups
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=changeme
